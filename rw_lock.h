@@ -25,6 +25,7 @@ typedef struct {
     float fraction_insert;   // Fraction of insert operations
     float fraction_delete;   // Fraction of delete operations
 
+    int m;
     // Number of each type of operation to perform
     int search_ops;
     int insert_ops;
@@ -37,7 +38,7 @@ typedef struct {
     int performed_total;
 
     int thread_id;           // Thread identifier
-} rw_lock_test_data;
+} rw_lock_data;
 
 /**
  * Runs the linked list test using a read-write lock.
@@ -45,6 +46,6 @@ typedef struct {
  * @param num_threads  Number of concurrent threads to use
  * @return Execution time in microseconds
  */
-unsigned long run_rw_lock_test(int case_id, int num_threads);
+unsigned long test_rw_lock_run(int case_id, int num_threads);
 
 #endif

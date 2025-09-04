@@ -19,7 +19,7 @@ void *rw_thread_worker(void *arg);
  * @param num_threads Number of concurrent threads
  * @return          Execution time in microseconds
  */
-unsigned long run_rw_lock_test(int case_id, int num_threads) {
+unsigned long test_rw_lock_run(int case_id, int num_threads) {
     rw_lock_data rw_data;
     rw_data.head = NULL;         // Start with an empty list
     rw_data.m = 10000;           // Total number of operations

@@ -15,6 +15,6 @@
  * Runs Insert, Delete, and Member operations on a sequential linked list
  * and returns the execution time in microseconds.
  */
-unsigned long run_serial_case(int case_num);
+unsigned long test_serial_run(int case_num);
 
 #endif // SERIAL_RUN_H
