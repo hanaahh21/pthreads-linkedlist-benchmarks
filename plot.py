@@ -39,10 +39,18 @@ def read_and_average(csv_file, case_num):
     rw_std  = [df[f'rw_t{t}'].std() for t in threads]
 
     # Print results
-    print(f"\nCase {case_num} execution time statistics:")
-    print(f"Serial      -> Avg: {serial_avg:.2f} μs, Std: {serial_std:.2f} μs")
-    print(f"Mutex       -> Avg: {mut_avg}, Std: {mut_std}")
-    print(f"RW Lock     -> Avg: {rw_avg}, Std: {rw_std}")
+    print(f"\nCase {case_num}")
+    print("-" * 30)
+    print(f"Serial Avg: {serial_avg:.2f} μs")
+    print(f"Serial Std: {serial_std:.2f} μs\n")
+
+    for i, t in enumerate(threads):
+        print(f"Mutex_{t} Avg: {mut_avg[i]:.2f} μs")
+        print(f"Mutex_{t} Std: {mut_std[i]:.2f} μs\n")
+
+    for i, t in enumerate(threads):
+        print(f"RWLock_{t} Avg: {rw_avg[i]:.2f} μs")
+        print(f"RWLock_{t} Std: {rw_std[i]:.2f} μs\n")
 
     return (serial_avg, serial_std, mut_avg, mut_std, rw_avg, rw_std)
 
