@@ -16,28 +16,29 @@
  * fractions of operations, and the pthread read-write lock.
  */
 typedef struct {
-    pthread_rwlock_t lock;   // Read-write lock for concurrent access
+    pthread_rwlock_t rwlock;// Read-write lock for concurrent access
+    pthread_mutex_t counter_lock; // New: protect counters
+
     node *head;              // Pointer to the head of the linked list
 
     int num_threads;         // Number of concurrent threads
-    int total_ops;           // Total number of operations
-    float fraction_search;   // Fraction of search (Member) operations
-    float fraction_insert;   // Fraction of insert operations
-    float fraction_delete;   // Fraction of delete operations
-
-    int m;
-    // Number of each type of operation to perform
-    int search_ops;
-    int insert_ops;
-    int delete_ops;
+    int totOps;           // Total number of operations
+    float mmem;   // Fraction of search (Member) operations
+    float mins;   // Fraction of insert operations
+    float mdel;   // Fraction of delete operations
 
     // Counters for performed operations
-    int performed_search;
-    int performed_insert;
-    int performed_delete;
-    int performed_total;
+    int memOps;
+    int insOps;
+    int delOps;
 
-    int thread_id;           // Thread identifier
+    // Number of each type of operation to perform
+    int Mem;
+    int Ins;
+    int Del;
+    int m;
+
+    int rank;           // Thread identifier
 } rw_lock_data;
 
 /**

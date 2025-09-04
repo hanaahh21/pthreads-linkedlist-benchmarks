@@ -109,45 +109,31 @@ unsigned long test_mutex_run(int case_num, int thread_count){
 
 void *threadFunc_mtx(void * t_data){
     mutex_data* thread_data = t_data;
-    long my_rank = (long) thread_data->rank;
-    while (thread_data->totOps< thread_data->m){
 
+    while (1) {
         int rand_value = rand() % MAX;
-
         int op = rand() % 3;
 
-        if (op==0 && thread_data->insOps < thread_data->Ins){
-            if (thread_data->totOps<thread_data->m){
-                pthread_mutex_lock(&thread_data->mutex);
-                short res = Insert(rand_value, &thread_data->head);
-                thread_data->insOps++;
-                thread_data->totOps++;
-                pthread_mutex_unlock(&thread_data->mutex);
-                //printf("Thread %ld Operation %d , Insert %d %d\n", thread_data->rank, thread_data->totOps, rand_value, res);
-            }
-
+        pthread_mutex_lock(&thread_data->mutex);
+        if (thread_data->totOps >= thread_data->m) {
+            pthread_mutex_unlock(&thread_data->mutex);
+            break;  // Exit loop safely
         }
-        else if(op==1 && thread_data->delOps < thread_data->Del){
-            if (thread_data->totOps<thread_data->m){
-                pthread_mutex_lock(&thread_data->mutex);
-                short res = Delete(rand_value, &thread_data->head);
-                thread_data->delOps++;
-                thread_data->totOps++;
-                pthread_mutex_unlock(&thread_data->mutex);
-                //printf("Thread %ld Operation %d , Delete %d %d\n", thread_data->rank, thread_data->totOps, rand_value, res);
-            }
 
+        if (op == 0 && thread_data->insOps < thread_data->Ins) {
+            Insert(rand_value, &thread_data->head);
+            thread_data->insOps++;
+        } else if (op == 1 && thread_data->delOps < thread_data->Del) {
+            Delete(rand_value, &thread_data->head);
+            thread_data->delOps++;
+        } else if (thread_data->memOps < thread_data->Mem) {
+            Member(rand_value, thread_data->head);
+            thread_data->memOps++;
         }
-        else if(thread_data->memOps < thread_data->Mem){
-            if (thread_data->totOps<thread_data->m){
-                pthread_mutex_lock(&thread_data->mutex);
-                short res = Member(rand_value, thread_data->head);
-                thread_data->memOps++;
-                thread_data->totOps++;
-                pthread_mutex_unlock(&thread_data->mutex);
-                //printf("Thread %ld Operation %d , Search %d %d\n", thread_data->rank, thread_data->totOps, rand_value, res);
-            }
 
-        }
+        thread_data->totOps++;
+        pthread_mutex_unlock(&thread_data->mutex);
     }
+
+    return NULL;
 }

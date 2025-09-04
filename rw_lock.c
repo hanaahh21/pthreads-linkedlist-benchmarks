@@ -66,6 +66,7 @@ unsigned long test_rw_lock_run(int case_id, int num_threads) {
 
     // Initialize the read-write lock
     pthread_rwlock_init(&rw_data.rwlock, NULL);
+    pthread_mutex_init(&rw_data.counter_lock, NULL);
 
     pthread_t *threads = malloc(num_threads * sizeof(pthread_t));
 
@@ -87,6 +88,8 @@ unsigned long test_rw_lock_run(int case_id, int num_threads) {
 
     // Clean up
     pthread_rwlock_destroy(&rw_data.rwlock);
+    pthread_mutex_destroy(&rw_data.counter_lock);
+
     free(threads);
     destructor(rw_data.head);
 
@@ -105,38 +108,47 @@ unsigned long test_rw_lock_run(int case_id, int num_threads) {
 void *rw_thread_worker(void *arg) {
     rw_lock_data *data = (rw_lock_data*)arg;
 
-    while (data->totOps < data->m) {
+    while (1) {
+        pthread_mutex_lock(&data->counter_lock);
+        if (data->totOps >= data->m) {
+            pthread_mutex_unlock(&data->counter_lock);
+            break; // all work done
+        }
+        data->totOps++; // reserve an operation slot
+        pthread_mutex_unlock(&data->counter_lock);
+
         int val = rand() % MAX;
         int op_type = rand() % 3;
 
         if (op_type == 0 && data->insOps < data->Ins) {
-            if (data->totOps < data->m) {
-                pthread_rwlock_wrlock(&data->rwlock);
-                Insert(val, &data->head);
-                pthread_rwlock_unlock(&data->rwlock);
-                data->insOps++;
-                data->totOps++;
-            }
+            pthread_rwlock_wrlock(&data->rwlock);
+            Insert(val, &data->head);
+            pthread_rwlock_unlock(&data->rwlock);
+
+            pthread_mutex_lock(&data->counter_lock);
+            data->insOps++;
+            pthread_mutex_unlock(&data->counter_lock);
         }
         else if (op_type == 1 && data->delOps < data->Del) {
-            if (data->totOps < data->m) {
-                pthread_rwlock_wrlock(&data->rwlock);
-                Delete(val, &data->head);
-                pthread_rwlock_unlock(&data->rwlock);
-                data->delOps++;
-                data->totOps++;
-            }
+            pthread_rwlock_wrlock(&data->rwlock);
+            Delete(val, &data->head);
+            pthread_rwlock_unlock(&data->rwlock);
+
+            pthread_mutex_lock(&data->counter_lock);
+            data->delOps++;
+            pthread_mutex_unlock(&data->counter_lock);
         }
-        else if (data->memOps < data->Mem) {
-            if (data->totOps < data->m) {
-                pthread_rwlock_rdlock(&data->rwlock);
-                Member(val, data->head);
-                pthread_rwlock_unlock(&data->rwlock);
-                data->memOps++;
-                data->totOps++;
-            }
+        else {
+            pthread_rwlock_rdlock(&data->rwlock);
+            Member(val, data->head);
+            pthread_rwlock_unlock(&data->rwlock);
+
+            pthread_mutex_lock(&data->counter_lock);
+            data->memOps++;
+            pthread_mutex_unlock(&data->counter_lock);
         }
     }
 
     return NULL;
 }
+
