@@ -1,5 +1,5 @@
-#ifndef RW_LOCK_MODULE_H
-#define RW_LOCK_MODULE_H
+#ifndef RW_LOCK_H
+#define RW_LOCK_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,40 +11,38 @@
 #include "global.h"
 
 /**
- * Structure to store data needed for the read-write lock test.
- * Includes the linked list head, operation counters, 
- * fractions of operations, and the pthread read-write lock.
+ * Struct to hold data for RW Lock test.
  */
-typedef struct {
-    pthread_rwlock_t lock;   // Read-write lock for concurrent access
-    node *head;              // Pointer to the head of the linked list
+typedef struct rw_lock_data {
+    pthread_rwlock_t rwlock;   // Reader-writer lock
+    node *head;                // Linked list head
 
-    int num_threads;         // Number of concurrent threads
-    int total_ops;           // Total number of operations
-    float fraction_search;   // Fraction of search (Member) operations
-    float fraction_insert;   // Fraction of insert operations
-    float fraction_delete;   // Fraction of delete operations
+    int thread_count;          // Number of threads
+    int m;                     // Total number of operations
 
-    // Number of each type of operation to perform
-    int search_ops;
-    int insert_ops;
-    int delete_ops;
+    // Fractions (probabilities) for each operation
+    float frac_mem;            
+    float frac_ins;            
+    float frac_del;            
 
-    // Counters for performed operations
-    int performed_search;
-    int performed_insert;
-    int performed_delete;
-    int performed_total;
+    // Exact number of operations for each type
+    int max_mem_ops;           
+    int max_ins_ops;           
+    int max_del_ops;           
 
-    int thread_id;           // Thread identifier
-} rw_lock_test_data;
+    // Operation counters (shared across threads)
+    int mem_count;             
+    int ins_count;             
+    int del_count;             
+    int total_count;           
+
+    pthread_mutex_t counter_lock; // Protects operation counters
+} rw_lock_data;
 
 /**
- * Runs the linked list test using a read-write lock.
- * @param case_id      Test case number (1,2,3)
- * @param num_threads  Number of concurrent threads to use
- * @return Execution time in microseconds
+ * Run RW lock experiment for given case and thread count.
+ * Returns execution time in microseconds.
  */
-unsigned long run_rw_lock_test(int case_id, int num_threads);
+unsigned long test_rw_lock_run(int case_num, int thread_count);
 
 #endif
