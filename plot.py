@@ -9,23 +9,42 @@ os.makedirs('plots', exist_ok=True)
 # Number of threads for concurrent tests
 threads = [1, 2, 4, 8]
 
-def read_and_average(csv_file):
+def read_and_average(csv_file, case_num):
     """
-    Read a CSV and compute the average execution times for Serial, Mutex, and RW Lock.
-    
+    Read a CSV and compute the average and standard deviation of execution times
+    for Serial, Mutex, and RW Lock.
+
+    Args:
+        csv_file (str): Path to CSV file
+        case_num (int): Case number for display purposes
+
     Returns:
-        serial_avg (float): Average execution time for Serial
-        mut_avg (list): Avg execution times for Mutex across threads
-        rw_avg (list): Avg execution times for RW Lock across threads
+        serial_avg, serial_std (float)
+        mut_avg, mut_std (list of float)
+        rw_avg, rw_std (list of float)
     """
     df = pd.read_csv(csv_file)
     df.columns = [c.strip() for c in df.columns]  # Remove leading/trailing spaces
-    
+
+    # Serial
     serial_avg = df['Serial'].mean()
+    serial_std = df['Serial'].std()
+
+    # Mutex
     mut_avg = [df[f'mut_t{t}'].mean() for t in threads]
+    mut_std = [df[f'mut_t{t}'].std() for t in threads]
+
+    # RW Lock
     rw_avg  = [df[f'rw_t{t}'].mean() for t in threads]
-    
-    return serial_avg, mut_avg, rw_avg
+    rw_std  = [df[f'rw_t{t}'].std() for t in threads]
+
+    # Print results
+    print(f"\nCase {case_num} execution time statistics:")
+    print(f"Serial      -> Avg: {serial_avg:.2f} μs, Std: {serial_std:.2f} μs")
+    print(f"Mutex       -> Avg: {mut_avg}, Std: {mut_std}")
+    print(f"RW Lock     -> Avg: {rw_avg}, Std: {rw_std}")
+
+    return (serial_avg, serial_std, mut_avg, mut_std, rw_avg, rw_std)
 
 def plot_line(serial_avg, mut_avg, rw_avg, case_num):
     """
@@ -73,7 +92,7 @@ csv_files = ['output/Case_1.csv', 'output/Case_2.csv', 'output/Case_3.csv']
 
 # Generate all plots
 for case_num, csv_file in enumerate(csv_files, start=1):
-    serial_avg, mut_avg, rw_avg = read_and_average(csv_file)
+    serial_avg, serial_std, mut_avg, mut_std, rw_avg, rw_std = read_and_average(csv_file, case_num)
     plot_line(serial_avg, mut_avg, rw_avg, case_num)
     plot_bar(serial_avg, mut_avg, rw_avg, case_num)
 
