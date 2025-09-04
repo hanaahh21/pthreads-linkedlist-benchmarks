@@ -52,6 +52,7 @@ Run the plotting script to generate line and bar plots for each test case:
 ```bash
 python plot.py
 ```
+This wil also give the average execution time and standard deviation for each type of linked list implementation per run
 
 The plots will be saved in a plots directory:
 
